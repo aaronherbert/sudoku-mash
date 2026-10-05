@@ -17,6 +17,7 @@ import {
 import { HomeScreen } from './HomeScreen';
 import { RoomScreen } from './RoomScreen';
 import './app.css';
+import './arcade.css';
 
 type Screen =
   | { kind: 'home'; notice?: string }
@@ -54,9 +55,10 @@ export function App() {
     <ThemeProvider theme={theme}>
       <ToastProvider>
         <AppShell
-          brand={<>Sudoku Mash</>}
+          className="arc-shell"
+          brand={<span className="arc-brand">Sudoku <span>Mash</span></span>}
           headerActions={
-            <Button variant="ghost" size="sm" onClick={toggleTheme} aria-pressed={theme === 'light'}>
+            <Button variant="ghost" size="sm" className="arc-btn arc-btn--sm" onClick={toggleTheme} aria-pressed={theme === 'light'}>
               {theme === 'dark' ? 'Light theme' : 'Dark theme'}
             </Button>
           }

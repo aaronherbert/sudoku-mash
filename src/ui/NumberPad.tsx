@@ -18,8 +18,8 @@ export function NumberPad({ cells, disabled, onEnter }: NumberPadProps) {
         return (
           <Button
             key={d}
-            variant="outline"
-            size="lg"
+            variant="ghost"
+            className="arc-btn"
             disabled={disabled || done}
             aria-label={done ? `${d}, all placed` : `Enter ${d}`}
             onClick={() => onEnter(d)}
