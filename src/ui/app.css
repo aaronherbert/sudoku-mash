@@ -1,0 +1,227 @@
+/*
+ * Custom pieces Tide doesn't have: the Sudoku board and number pad.
+ * Tide semantic tokens only, so both themes work. scripts/check-contrast.mjs
+ * checks every text/background pair used here in both themes.
+ */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.room-code {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-5xl);
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: 0.1em;
+  line-height: 1;
+  color: var(--ds-color-primary-text);
+  margin: 0;
+}
+
+/*
+ * Player colours: one Tide palette per player, all at the same shade (300 on
+ * dark, 700 on light), so they read as one family. Tide has no semantic
+ * player/categorical tokens yet, so these are the one place the raw palette is
+ * used. scripts/check-contrast.mjs checks every colour on every cell background.
+ */
+[data-theme='dark'] .player-cobalt { --player-color: var(--ds-cobalt-300); }
+[data-theme='dark'] .player-saffron { --player-color: var(--ds-saffron-300); }
+[data-theme='dark'] .player-red { --player-color: var(--ds-red-300); }
+[data-theme='dark'] .player-green { --player-color: var(--ds-green-300); }
+[data-theme='dark'] .player-cobalt-alt { --player-color: var(--ds-cobalt-alt-300); }
+[data-theme='dark'] .player-mist { --player-color: var(--ds-mist-300); }
+[data-theme='dark'] .player-blue { --player-color: var(--ds-blue-300); }
+[data-theme='dark'] .player-amber { --player-color: var(--ds-amber-300); }
+
+[data-theme='light'] .player-cobalt { --player-color: var(--ds-cobalt-700); }
+[data-theme='light'] .player-saffron { --player-color: var(--ds-saffron-700); }
+[data-theme='light'] .player-red { --player-color: var(--ds-red-700); }
+[data-theme='light'] .player-green { --player-color: var(--ds-green-700); }
+[data-theme='light'] .player-cobalt-alt { --player-color: var(--ds-cobalt-alt-700); }
+[data-theme='light'] .player-mist { --player-color: var(--ds-mist-700); }
+[data-theme='light'] .player-blue { --player-color: var(--ds-blue-700); }
+[data-theme='light'] .player-amber { --player-color: var(--ds-amber-700); }
+
+.seat {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--ds-space-6);
+  height: var(--ds-space-6);
+  padding: 0 var(--ds-space-1);
+  border: 2px solid var(--player-color, var(--ds-color-primary));
+  border-radius: var(--ds-radius-full);
+  color: var(--player-color, var(--ds-color-primary-text));
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold);
+  font-family: var(--ds-font-mono);
+}
+
+.plain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.score-row {
+  display: grid;
+  grid-template-columns: var(--ds-space-8) 1fr auto;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+/* ---------- Main board ---------- */
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  width: 100%;
+  max-width: calc(var(--ds-space-16) * 9);
+  margin-inline: auto;
+  border: 2px solid var(--ds-color-text-subtle);
+  border-radius: var(--ds-radius-md);
+  overflow: hidden;
+  background: var(--ds-color-text-subtle);
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.board[aria-disabled='true'] .cell {
+  cursor: not-allowed;
+}
+
+.board-row {
+  display: contents;
+}
+
+.cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  min-width: 0;
+  background: var(--ds-color-surface);
+  color: var(--ds-color-text);
+  font-family: var(--ds-font-sans);
+  font-size: var(--ds-text-xl);
+  font-weight: var(--ds-weight-medium);
+  border-right: 1px solid var(--ds-color-border);
+  border-bottom: 1px solid var(--ds-color-border);
+  cursor: pointer;
+}
+
+.cell:nth-child(9n) {
+  border-right: 0;
+}
+
+.cell.edge-right {
+  border-right: 2px solid var(--ds-color-text-subtle);
+}
+
+.cell.edge-bottom {
+  border-bottom: 2px solid var(--ds-color-text-subtle);
+}
+
+.cell.last-row {
+  border-bottom: 0;
+}
+
+.cell.is-given {
+  background: var(--ds-color-surface-sunken);
+  font-weight: var(--ds-weight-bold);
+  cursor: default;
+}
+
+/* Row, column and box of the selected cell. */
+.cell.is-peer,
+.cell.is-given.is-peer {
+  background: var(--ds-color-surface-hover);
+}
+
+/* Same digit as the selected cell: saffron. */
+.cell.is-match {
+  background: var(--ds-color-accent-subtle);
+  color: var(--ds-color-accent-text);
+  font-weight: var(--ds-weight-bold);
+}
+
+/* The selected cell: cobalt. */
+.cell.is-selected {
+  background: var(--ds-color-primary-subtle);
+  color: var(--ds-color-primary-text);
+  box-shadow: inset 0 0 0 2px var(--ds-color-primary);
+}
+
+/* A solved cell always shows in its scorer's colour, whatever the highlight. */
+.cell.has-owner {
+  color: var(--player-color);
+  font-weight: var(--ds-weight-semibold);
+}
+
+.cell:focus-visible {
+  outline: 2px solid var(--ds-color-focus-ring);
+  outline-offset: -4px;
+  z-index: 1;
+}
+
+.cell-owner {
+  position: absolute;
+  top: 0;
+  right: var(--ds-space-1);
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  line-height: 1.4;
+  color: inherit;
+}
+
+.cell.is-fresh {
+  animation: cell-pop 900ms ease-out;
+}
+
+@keyframes cell-pop {
+  0% {
+    box-shadow: inset 0 0 0 3px var(--player-color, var(--ds-color-accent));
+  }
+  100% {
+    box-shadow: inset 0 0 0 3px transparent;
+  }
+}
+
+@media (max-width: 480px) {
+  .cell {
+    font-size: var(--ds-text-lg);
+  }
+  .cell-owner {
+    display: none;
+  }
+}
+
+/* ---------- Number pad ---------- */
+
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: var(--ds-space-1);
+  width: 100%;
+  max-width: calc(var(--ds-space-16) * 9);
+  margin-inline: auto;
+}
+
+.numpad > * {
+  min-width: 0;
+  padding-inline: 0;
+  font-size: var(--ds-text-lg);
+}
