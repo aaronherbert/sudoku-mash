@@ -1,7 +1,7 @@
-import { Button, Dialog, Heading, Stack, Text } from '@aaronherbert/design-system';
+import { Button, Dialog, Stack, Text } from '@aaronherbert/design-system';
 import type { RoomHandle } from '../session/RoomHandle';
 import { DifficultyPicker, difficultyLabel } from './DifficultyPicker';
-import { ordinal } from './Scoreboard';
+import { ordinal, PlayerToken } from './Scoreboard';
 
 interface ResultsDialogProps {
   room: RoomHandle;
@@ -17,9 +17,17 @@ export function ResultsDialog({ room, open, onClose }: ResultsDialogProps) {
   const generating = state.phase === 'generating';
   const hostName = state.players.find((p) => p.isHost)?.name ?? 'the host';
   const enoughPlayers = state.players.filter((p) => p.connected).length >= 2;
+  const you = room.view.you;
+
+  /** The player's seat token, or an empty slot if they've since left. */
+  const token = (playerId: string) => {
+    const player = state.players.find((p) => p.id === playerId);
+    return player ? <PlayerToken player={player} /> : <span />;
+  };
 
   return (
     <Dialog
+      className="arc-dialog"
       open={open}
       onClose={onClose}
       closeOnBackdrop={false}
@@ -28,56 +36,63 @@ export function ResultsDialog({ room, open, onClose }: ResultsDialogProps) {
       footer={
         isHost ? (
           <>
-            <Button variant="outline" onClick={room.leave}>Close room</Button>
-            <Button onClick={room.beginRound} loading={generating} disabled={!enoughPlayers}>
+            <Button variant="ghost" className="arc-btn arc-btn--sm" onClick={room.leave}>Close room</Button>
+            <Button
+              variant="ghost"
+              className="arc-btn arc-btn--sm arc-btn--gold"
+              onClick={room.beginRound}
+              loading={generating}
+              disabled={!enoughPlayers}
+            >
               Next round
             </Button>
           </>
         ) : (
           <>
-            <Button variant="outline" onClick={room.leave}>Leave game</Button>
-            <Button variant="secondary" onClick={onClose}>View board</Button>
+            <Button variant="ghost" className="arc-btn arc-btn--sm" onClick={room.leave}>Leave game</Button>
+            <Button variant="ghost" className="arc-btn arc-btn--sm arc-btn--blue" onClick={onClose}>View board</Button>
           </>
         )
       }
     >
       <Stack gap={6}>
-        <Stack gap={2}>
-          <Heading level={3} size="sm">Placings</Heading>
-          <ol className="plain-list">
+        <section className="results__section" aria-labelledby="placings-title">
+          <h3 id="placings-title" className="arc-panel__title">Placings</h3>
+          <ol className="leaderboard">
             {result.placings.map((p) => (
-              <li key={p.playerId} className="score-row">
-                <Text as="span" weight="bold" tone={p.place === 1 ? 'primary' : 'default'}>
-                  {ordinal(p.place)}
-                </Text>
-                <Text as="span">
+              <li key={p.playerId} className={`leaderboard__row${p.playerId === you ? ' is-you' : ''}`}>
+                <span className={`leaderboard__place${p.place === 1 ? ' is-first' : ''}`}>{ordinal(p.place)}</span>
+                {token(p.playerId)}
+                <span className="leaderboard__name">
                   {p.name}
-                  {p.playerId === room.view.you && ' (you)'}
-                </Text>
-                <Text as="span" mono>
-                  {p.roundScore} pts
-                  <Text as="span" size="xs" tone="muted"> · {p.cellsSolved} cells</Text>
-                </Text>
+                  {p.playerId === you && <small> (you)</small>}
+                </span>
+                <span className="leaderboard__score">
+                  {p.roundScore} <small>pts · {p.cellsSolved} cells</small>
+                </span>
               </li>
             ))}
           </ol>
-        </Stack>
+        </section>
 
-        <Stack gap={2}>
-          <Heading level={3} size="sm">Running scoreboard</Heading>
-          <ol className="plain-list">
+        <section className="results__section" aria-labelledby="totals-title">
+          <h3 id="totals-title" className="arc-panel__title">Running scoreboard</h3>
+          <ol className="leaderboard">
             {result.totals.map((t) => (
-              <li key={t.playerId} className="score-row">
-                <Text as="span" weight="bold">{ordinal(t.place)}</Text>
-                <Text as="span">
+              <li key={t.playerId} className={`leaderboard__row${t.playerId === you ? ' is-you' : ''}`}>
+                <span className={`leaderboard__place${t.place === 1 ? ' is-first' : ''}`}>{ordinal(t.place)}</span>
+                {token(t.playerId)}
+                <span className="leaderboard__name">
                   {t.name}
-                  {t.playerId === room.view.you && ' (you)'}
-                </Text>
-                <Text as="span" mono>{t.totalScore} pts</Text>
+                  {t.playerId === you && <small> (you)</small>}
+                </span>
+                <span className="leaderboard__score">
+                  {t.totalScore} <small>pts</small>
+                </span>
               </li>
             ))}
           </ol>
-        </Stack>
+        </section>
 
         {isHost ? (
           <Stack gap={2}>

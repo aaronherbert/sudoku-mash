@@ -71,7 +71,7 @@ const pairs = [
   ['accent-text', 'accent-subtle', TEXT, 'matching digit (saffron)'],
   ['primary-text', 'primary-subtle', TEXT, 'selected cell (cobalt)'],
   // Other text
-  ['primary-text', 'surface', TEXT, 'room code'],
+  ['primary-text', 'surface', TEXT, 'primary text'],
   ['text-muted', 'surface', TEXT, 'muted copy'],
   ['warning-text', 'surface', TEXT, '"Reconnecting…" in the lobby'],
   ['danger-text', 'surface', TEXT, 'error copy'],
@@ -82,13 +82,42 @@ const pairs = [
   ['text-subtle', 'surface-sunken', UI, '3×3 box lines next to given cells'],
   ['text-subtle', 'surface-hover', UI, '3×3 box lines next to highlighted cells'],
   ['focus-ring', 'surface', UI, 'keyboard focus ring'],
+  ['focus-ring', 'bg', UI, 'keyboard focus ring on the page'],
+
+  // Arcade look (src/ui/arcade.css)
+  ['--ds-mist-950', '--ds-saffron-300', TEXT, 'ink on gold buttons and room code tiles'],
+  ['--ds-mist-950', '--ds-cobalt-300', TEXT, 'ink on blue buttons and the chosen difficulty'],
+  ['text-muted', 'bg', TEXT, 'muted copy on the page'],
+  ['accent-text', 'surface', TEXT, 'scores, player count, difficulty stars'],
+  ['primary-text', 'primary-subtle', TEXT, 'your row on the leaderboard'],
+  ['danger-text', 'danger-subtle', TEXT, '"Locked out" panel'],
+  ['control-border', 'surface', UI, 'number keys, difficulty tiles'],
+  ['control-border', 'control-bg', UI, 'name field and room code tiles'],
+  ['danger', 'danger-subtle', UI, 'lockout panel edge and meter'],
 ];
+
+/** Pairs that differ by theme: dark uses bright fills, light adds ink outlines. */
+const themePairs = {
+  dark: [
+    ['--ds-saffron-300', 'bg', TEXT, 'title (gold)'],
+    ['--ds-saffron-300', 'bg', UI, 'gold button against the page'],
+    ['--ds-cobalt-300', 'bg', UI, 'blue button against the page'],
+  ],
+  light: [
+    ['--ds-cobalt-700', 'bg', TEXT, 'title (cobalt)'],
+    ['--ds-mist-950', 'bg', UI, 'ink outline on gold and blue buttons'],
+  ],
+};
 
 let failures = 0;
 for (const [theme, vars] of Object.entries(themes)) {
   const playerPairs = PLAYER_COLORS.flatMap((color) => PLAYER_BACKGROUNDS.map((bg) =>
     [`--ds-${color}-${PLAYER_SHADE[theme]}`, bg, TEXT, `${color} player's digits and seat badge`]));
-  for (const [fg, bg, min, where] of [...pairs, ...playerPairs]) {
+  // Seat tokens and logo tiles: text on a player-colour fill.
+  const onPlayer = theme === 'dark' ? '--ds-mist-950' : 'surface';
+  const tokenPairs = PLAYER_COLORS.map((color) =>
+    [onPlayer, `--ds-${color}-${PLAYER_SHADE[theme]}`, TEXT, `seat number on the ${color} token`]);
+  for (const [fg, bg, min, where] of [...pairs, ...themePairs[theme], ...playerPairs, ...tokenPairs]) {
     const r = ratio(resolve(vars, c(fg)), resolve(vars, c(bg)));
     const ok = r >= min;
     if (!ok) failures++;

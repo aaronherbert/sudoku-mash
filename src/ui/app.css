@@ -1,5 +1,6 @@
 /*
- * Custom pieces Tide doesn't have: the Sudoku board and number pad.
+ * Custom pieces Tide doesn't have: the Sudoku board and number pad. The arcade
+ * look (fonts, buttons, panels) is in arcade.css.
  * Tide semantic tokens only, so both themes work. scripts/check-contrast.mjs
  * checks every text/background pair used here in both themes.
  */
@@ -14,16 +15,6 @@
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
-}
-
-.room-code {
-  font-family: var(--ds-font-mono);
-  font-size: var(--ds-text-5xl);
-  font-weight: var(--ds-weight-bold);
-  letter-spacing: 0.1em;
-  line-height: 1;
-  color: var(--ds-color-primary-text);
-  margin: 0;
 }
 
 /*
@@ -50,37 +41,6 @@
 [data-theme='light'] .player-blue { --player-color: var(--ds-blue-700); }
 [data-theme='light'] .player-amber { --player-color: var(--ds-amber-700); }
 
-.seat {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: var(--ds-space-6);
-  height: var(--ds-space-6);
-  padding: 0 var(--ds-space-1);
-  border: 2px solid var(--player-color, var(--ds-color-primary));
-  border-radius: var(--ds-radius-full);
-  color: var(--player-color, var(--ds-color-primary-text));
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-bold);
-  font-family: var(--ds-font-mono);
-}
-
-.plain-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2);
-}
-
-.score-row {
-  display: grid;
-  grid-template-columns: var(--ds-space-8) 1fr auto;
-  align-items: center;
-  gap: var(--ds-space-2);
-}
-
 /* ---------- Main board ---------- */
 
 .board {
@@ -89,10 +49,15 @@
   width: 100%;
   max-width: calc(var(--ds-space-16) * 9);
   margin-inline: auto;
-  border: 2px solid var(--ds-color-text-subtle);
-  border-radius: var(--ds-radius-md);
+  border: 4px solid var(--ds-color-text-subtle);
+  border-radius: var(--ds-radius-lg);
   overflow: hidden;
   background: var(--ds-color-text-subtle);
+  /* Arcade: the board sits on a hard drop shadow, like the buttons. */
+  box-shadow: 0 8px 0 var(--arc-board-shadow);
+  margin-bottom: 8px;
+  /* Bungee has one weight; don't let the bold states fake a heavier one. */
+  font-synthesis: none;
   user-select: none;
   touch-action: manipulation;
 }
@@ -114,9 +79,9 @@
   min-width: 0;
   background: var(--ds-color-surface);
   color: var(--ds-color-text);
-  font-family: var(--ds-font-sans);
-  font-size: var(--ds-text-xl);
-  font-weight: var(--ds-weight-medium);
+  font-family: var(--arc-font);
+  font-size: var(--ds-text-2xl);
+  font-weight: 400;
   border-right: 1px solid var(--ds-color-border);
   border-bottom: 1px solid var(--ds-color-border);
   cursor: pointer;
@@ -127,11 +92,11 @@
 }
 
 .cell.edge-right {
-  border-right: 2px solid var(--ds-color-text-subtle);
+  border-right: 3px solid var(--ds-color-text-subtle);
 }
 
 .cell.edge-bottom {
-  border-bottom: 2px solid var(--ds-color-text-subtle);
+  border-bottom: 3px solid var(--ds-color-text-subtle);
 }
 
 .cell.last-row {
@@ -161,7 +126,7 @@
 .cell.is-selected {
   background: var(--ds-color-primary-subtle);
   color: var(--ds-color-primary-text);
-  box-shadow: inset 0 0 0 2px var(--ds-color-primary);
+  box-shadow: inset 0 0 0 3px var(--ds-color-primary);
 }
 
 /* A solved cell always shows in its scorer's colour, whatever the highlight. */
@@ -182,7 +147,7 @@
   right: var(--ds-space-1);
   font-family: var(--ds-font-mono);
   font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-medium);
+  font-weight: var(--ds-weight-bold);
   line-height: 1.4;
   color: inherit;
 }
@@ -202,7 +167,7 @@
 
 @media (max-width: 480px) {
   .cell {
-    font-size: var(--ds-text-lg);
+    font-size: var(--ds-text-xl);
   }
   .cell-owner {
     display: none;
@@ -220,8 +185,18 @@
   margin-inline: auto;
 }
 
-.numpad > * {
+.numpad > .ds-button.arc-btn {
+  --arc-depth: 5px;
   min-width: 0;
+  height: 3.5rem;
   padding-inline: 0;
-  font-size: var(--ds-text-lg);
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-xl);
+}
+
+@media (max-width: 480px) {
+  .numpad > .ds-button.arc-btn {
+    height: 3rem;
+    font-size: var(--ds-text-lg);
+  }
 }

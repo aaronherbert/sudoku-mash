@@ -1,5 +1,6 @@
-import { Button, Grid, GridItem, Heading, Inline, Stack, Text } from '@aaronherbert/design-system';
+import { Button, Grid, GridItem, Stack, Text } from '@aaronherbert/design-system';
 import { useEffect, useState } from 'react';
+import { DIFFICULTIES } from '../engine/types';
 import type { RoomHandle } from '../session/RoomHandle';
 import { Board } from './Board';
 import { difficultyLabel } from './DifficultyPicker';
@@ -37,28 +38,52 @@ export function GameScreen({ room }: { room: RoomHandle }) {
 
   return (
     <Stack gap={6}>
-      <Inline justify="space-between" gap={4}>
-        <Stack gap={1}>
-          <Heading level={1} size="lg">
-            Round {round} · {difficultyLabel(state.difficulty)}
-          </Heading>
-          <Text tone="muted" size="sm">
-            Room {state.code} · {remaining} {remaining === 1 ? 'cell' : 'cells'} left
-            {me && ` · You: ${me.roundScore} pts`}
-          </Text>
-        </Stack>
-        <Inline gap={2}>
+      <div className="hud">
+        <div className="hud__title">
+          <h1 className="arc-display arc-title hud__round">
+            Round {round}<span className="sr-only"> · {difficultyLabel(state.difficulty)}</span>
+          </h1>
+          <dl className="hud__stats">
+            <div className="hud__stat">
+              <dt>{difficultyLabel(state.difficulty)}</dt>
+              <dd className="difficulty__stars" aria-hidden="true">
+                {DIFFICULTIES.slice(0, DIFFICULTIES.indexOf(state.difficulty) + 1).map((d) => (
+                  <svg key={d} width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21l2-7.5L2 9h7z" />
+                  </svg>
+                ))}
+              </dd>
+            </div>
+            <div className="hud__stat">
+              <dt>Cells left</dt>
+              <dd>{remaining}</dd>
+            </div>
+            {me && (
+              <div className="hud__stat hud__stat--score">
+                <dt>Your score</dt>
+                <dd>{me.roundScore}</dd>
+              </div>
+            )}
+            <div className="hud__stat">
+              <dt>Room</dt>
+              <dd>{state.code}</dd>
+            </div>
+          </dl>
+        </div>
+        <div className="hud__actions">
           {room.devFill && playing && (
-            <Button variant="ghost" size="sm" onClick={room.devFill}>Dev: fill all but 3</Button>
+            <Button variant="ghost" className="arc-btn arc-btn--sm" onClick={room.devFill}>Dev: fill all but 3</Button>
           )}
           {!playing && state.lastResult && (
-            <Button variant="secondary" size="sm" onClick={() => setResultsDismissed(null)}>Show results</Button>
+            <Button variant="ghost" className="arc-btn arc-btn--sm arc-btn--blue" onClick={() => setResultsDismissed(null)}>
+              Show results
+            </Button>
           )}
-          <Button variant="outline" size="sm" onClick={room.leave}>
+          <Button variant="ghost" className="arc-btn arc-btn--sm" onClick={room.leave}>
             {room.role === 'host' ? 'Close room' : 'Leave game'}
           </Button>
-        </Inline>
-      </Inline>
+        </div>
+      </div>
 
       <Grid columns={12} gap={6}>
         <GridItem span={8}>

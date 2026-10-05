@@ -39,9 +39,10 @@ export function RoomScreen({ room, onExit }: RoomScreenProps) {
   if (room.status === 'failed') {
     return (
       <Card
+        className="arc-card"
         title="Couldn't open the game"
         padding="lg"
-        footer={<Button onClick={() => onExit()}>Back to home</Button>}
+        footer={<Button variant="ghost" className="arc-btn arc-btn--sm arc-btn--gold" onClick={() => onExit()}>Back to home</Button>}
       >
         <Text tone="danger" role="alert">{room.error}</Text>
       </Card>
@@ -53,12 +54,13 @@ export function RoomScreen({ room, onExit }: RoomScreenProps) {
     const full = room.endReason === 'full';
     return (
       <Card
+        className="arc-card"
         title={full ? 'That game is full' : 'Host left, game over'}
         description={full
           ? 'The game reached 8 players while you were away.'
           : 'The host closed the game or could not be reached for 2 minutes.'}
         padding="lg"
-        footer={<Button onClick={() => onExit()}>Back to home</Button>}
+        footer={<Button variant="ghost" className="arc-btn arc-btn--sm arc-btn--gold" onClick={() => onExit()}>Back to home</Button>}
       >
         {view.state?.lastResult && (
           <Text tone="muted">
@@ -84,7 +86,7 @@ export function RoomScreen({ room, onExit }: RoomScreenProps) {
         </Text>
         {room.role === 'guest' && (
           <div>
-            <Button variant="outline" onClick={room.leave}>Cancel</Button>
+            <Button variant="ghost" className="arc-btn arc-btn--sm" onClick={room.leave}>Cancel</Button>
           </div>
         )}
       </Stack>

@@ -1,0 +1,810 @@
+/*
+ * Arcade look: chunky Bungee display type, bright fills that sit on a hard
+ * drop shadow, and a faint 3×3 grid behind everything. Built on Tide tokens so
+ * both themes work. Dark: bright fills with a darker shade beneath. Light: the
+ * same fills with an ink outline and ink shadow (a "sticker" look), because the
+ * bright fills alone don't stand out from a light page.
+ *
+ * Like the player colours in app.css, the fills use the raw Tide palette (Tide
+ * has no "arcade" tokens). scripts/check-contrast.mjs checks every pair.
+ */
+
+@font-face {
+  font-family: 'Bungee';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(../fonts/bungee-latin-400-normal.woff2) format('woff2');
+}
+
+.ds-root {
+  --arc-font: 'Bungee', var(--ds-font-display);
+  --arc-depth: 6px;
+  /* Text on the bright fills (gold, blue, player colours in dark). */
+  --arc-ink: var(--ds-mist-950);
+  --arc-gold: var(--ds-saffron-300);
+  --arc-blue: var(--ds-cobalt-300);
+}
+
+[data-theme='dark'] {
+  --arc-gold-edge: var(--arc-gold);
+  --arc-gold-shadow: var(--ds-saffron-700);
+  --arc-blue-edge: var(--arc-blue);
+  --arc-blue-shadow: var(--ds-cobalt-700);
+  --arc-panel-edge: var(--ds-color-border-strong);
+  --arc-panel-shadow: var(--ds-color-surface-sunken);
+  --arc-key-shadow: var(--ds-color-border-strong);
+  --arc-board-shadow: var(--ds-cobalt-700);
+  --arc-title: var(--ds-saffron-300);
+  --arc-title-shadow: var(--ds-cobalt-700);
+  --arc-grid: var(--ds-color-surface);
+  /* Text on a player-colour fill (300 shades in dark). */
+  --arc-on-player: var(--arc-ink);
+}
+
+[data-theme='light'] {
+  --arc-gold-edge: var(--arc-ink);
+  --arc-gold-shadow: var(--arc-ink);
+  --arc-blue-edge: var(--arc-ink);
+  --arc-blue-shadow: var(--arc-ink);
+  --arc-panel-edge: var(--arc-ink);
+  --arc-panel-shadow: var(--arc-ink);
+  --arc-key-shadow: var(--arc-ink);
+  --arc-board-shadow: var(--arc-ink);
+  --arc-title: var(--ds-cobalt-700);
+  --arc-title-shadow: var(--ds-saffron-300);
+  --arc-grid: var(--ds-mist-100);
+  /* Text on a player-colour fill (700 shades in light). */
+  --arc-on-player: var(--ds-color-surface);
+}
+
+/* ---------- Shell ---------- */
+
+.arc-shell.ds-shell {
+  background-image:
+    linear-gradient(var(--arc-grid) 2px, transparent 2px),
+    linear-gradient(90deg, var(--arc-grid) 2px, transparent 2px);
+  background-size: 120px 120px;
+  background-position: -2px -2px;
+  background-repeat: repeat;
+}
+
+.arc-shell .ds-shell__header {
+  border-bottom: 3px solid var(--arc-panel-edge);
+}
+
+.arc-shell .ds-shell__header::after {
+  display: none;
+}
+
+.arc-brand {
+  font-family: var(--arc-font);
+  font-weight: 400;
+  font-size: var(--ds-text-lg);
+  letter-spacing: 0.02em;
+  color: var(--ds-color-text);
+}
+
+.arc-brand span {
+  color: var(--arc-title);
+}
+
+.arc-menu {
+  width: 100%;
+  max-width: 34rem;
+  margin-inline: auto;
+}
+
+/* ---------- Type ---------- */
+
+.arc-display {
+  font-family: var(--arc-font);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.arc-title {
+  color: var(--arc-title);
+  text-shadow: 4px 4px 0 var(--arc-title-shadow);
+}
+
+.arc-label {
+  font-family: var(--arc-font);
+  font-weight: 400;
+  font-size: var(--ds-text-sm);
+  letter-spacing: 0.06em;
+  color: var(--ds-color-text-muted);
+  margin: 0;
+}
+
+.arc-muted {
+  color: var(--ds-color-text-muted);
+  font-size: var(--ds-text-sm);
+  margin: 0;
+}
+
+/* ---------- Logo ---------- */
+
+.arc-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-2);
+  text-align: center;
+}
+
+.arc-logo__tiles {
+  display: flex;
+  gap: var(--ds-space-2);
+  margin-bottom: var(--ds-space-2);
+}
+
+.arc-logo__tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 3px solid var(--arc-panel-edge);
+  border-radius: var(--ds-radius-md);
+  background: var(--player-color);
+  color: var(--arc-on-player);
+  font-family: var(--arc-font);
+  font-size: var(--ds-text-xl);
+  box-shadow: 0 4px 0 var(--arc-panel-shadow);
+}
+
+[data-theme='dark'] .arc-logo__tile {
+  border-color: var(--player-color);
+}
+
+.arc-logo__tile:nth-child(odd) { transform: rotate(-5deg); }
+.arc-logo__tile:nth-child(even) { transform: rotate(4deg); }
+
+.arc-logo__title {
+  font-size: clamp(4rem, 18vw, 5.5rem);
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 380px) {
+  .arc-logo__tile {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: var(--ds-text-lg);
+  }
+}
+
+/* ---------- Buttons (on top of Tide's ghost Button) ---------- */
+
+.ds-button.arc-btn {
+  height: 4rem;
+  padding-inline: var(--ds-space-6);
+  border: 3px solid var(--ds-color-control-border);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-color-surface);
+  color: var(--ds-color-text);
+  font-family: var(--arc-font);
+  font-weight: 400;
+  font-size: var(--ds-text-xl);
+  letter-spacing: 0.04em;
+  box-shadow: 0 var(--arc-depth) 0 var(--arc-key-shadow);
+  margin-bottom: var(--arc-depth);
+  transition: transform var(--ds-duration-fast) var(--ds-ease), box-shadow var(--ds-duration-fast) var(--ds-ease);
+}
+
+.ds-button.arc-btn:hover:not(:disabled) {
+  background: var(--ds-color-surface-hover);
+}
+
+.ds-button.arc-btn:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 calc(var(--arc-depth) - 4px) 0 var(--arc-key-shadow);
+}
+
+.ds-button.arc-btn--gold,
+.ds-button.arc-btn--gold:hover:not(:disabled) {
+  background: var(--arc-gold);
+  border-color: var(--arc-gold-edge);
+  color: var(--arc-ink);
+  box-shadow: 0 var(--arc-depth) 0 var(--arc-gold-shadow);
+}
+
+.ds-button.arc-btn--gold:active:not(:disabled) {
+  box-shadow: 0 calc(var(--arc-depth) - 4px) 0 var(--arc-gold-shadow);
+}
+
+.ds-button.arc-btn--blue,
+.ds-button.arc-btn--blue:hover:not(:disabled) {
+  background: var(--arc-blue);
+  border-color: var(--arc-blue-edge);
+  color: var(--arc-ink);
+  box-shadow: 0 var(--arc-depth) 0 var(--arc-blue-shadow);
+}
+
+.ds-button.arc-btn--blue:active:not(:disabled) {
+  box-shadow: 0 calc(var(--arc-depth) - 4px) 0 var(--arc-blue-shadow);
+}
+
+.ds-button.arc-btn--gold:hover:not(:disabled),
+.ds-button.arc-btn--blue:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.ds-button.arc-btn--sm {
+  --arc-depth: 4px;
+  height: 2.75rem;
+  padding-inline: var(--ds-space-4);
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-sm);
+}
+
+.arc-btn--block.ds-button {
+  width: 100%;
+}
+
+/* ---------- Text fields ---------- */
+
+.arc-field .ds-field__label {
+  font-family: var(--arc-font);
+  font-weight: 400;
+  font-size: var(--ds-text-sm);
+  letter-spacing: 0.06em;
+  color: var(--ds-color-text-muted);
+}
+
+.arc-field .ds-control {
+  min-height: 3.75rem;
+  border-width: 3px;
+  border-radius: var(--ds-radius-lg);
+  font-size: var(--ds-text-xl);
+  font-weight: var(--ds-weight-semibold);
+}
+
+.arc-token {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--player-color, var(--arc-blue));
+  color: var(--arc-on-player);
+  font-family: var(--arc-font);
+  font-size: var(--ds-text-md);
+  line-height: 1;
+}
+
+/* Before a player has a colour (home screen), the token uses the blue fill. */
+.arc-token:not([class*='player-']) {
+  color: var(--arc-ink);
+}
+
+/* ---------- Room code tiles (home: input, lobby: display) ---------- */
+
+.code-tiles {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--ds-space-2);
+  border-radius: var(--ds-radius-lg);
+}
+
+/* One real input covers the tiles; the tiles only show what's typed. */
+.code-tiles__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  font-size: var(--ds-control-font-size);
+  cursor: text;
+}
+
+.code-tiles:has(.code-tiles__input:focus-visible) {
+  outline: 2px solid var(--ds-color-focus-ring);
+  outline-offset: 4px;
+}
+
+.code-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 4rem;
+  border: 3px solid var(--ds-color-control-border);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-color-control-bg);
+  color: var(--ds-color-text);
+  font-family: var(--arc-font);
+  font-size: var(--ds-text-3xl);
+}
+
+.code-tiles:focus-within .code-tile.is-next {
+  border-color: var(--ds-color-primary);
+  box-shadow: 0 0 0 3px var(--ds-color-primary-subtle);
+}
+
+.code-tiles:has([aria-invalid]) .code-tile {
+  border-color: var(--ds-color-danger);
+}
+
+.code-display {
+  display: flex;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  margin: 0;
+}
+
+.code-display span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 4rem;
+  border: 3px solid var(--arc-gold-edge);
+  border-radius: var(--ds-radius-md);
+  background: var(--arc-gold);
+  color: var(--arc-ink);
+  font-family: var(--arc-font);
+  font-size: var(--ds-text-3xl);
+  box-shadow: 0 5px 0 var(--arc-gold-shadow);
+}
+
+/* ---------- Divider ---------- */
+
+.arc-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.arc-divider::before,
+.arc-divider::after {
+  content: '';
+  flex: 1;
+  height: 3px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-color-border);
+}
+
+/* ---------- Panels ---------- */
+
+.arc-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-5);
+  border: 3px solid var(--arc-panel-edge);
+  border-radius: var(--ds-radius-xl);
+  background: var(--ds-color-surface);
+  box-shadow: 0 var(--arc-depth) 0 var(--arc-panel-shadow);
+}
+
+.arc-panel__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+}
+
+.arc-panel__title {
+  font-family: var(--arc-font);
+  font-weight: 400;
+  font-size: var(--ds-text-md);
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+.arc-count {
+  font-family: var(--arc-font);
+  color: var(--ds-color-accent-text);
+}
+
+/* ---------- Lobby seats ---------- */
+
+.seats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-2);
+}
+
+.seat-slot {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-height: 3.5rem;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: 3px solid var(--player-color);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-color-surface);
+  min-width: 0;
+}
+
+.seat-slot__name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-weight: var(--ds-weight-bold);
+  line-height: 1.2;
+}
+
+.seat-slot__name > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seat-slot__tag {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: 0.04em;
+  color: var(--ds-color-accent-text);
+}
+
+.seat-slot__tag.is-warning {
+  color: var(--ds-color-warning-text);
+}
+
+.seat-slot--open {
+  justify-content: center;
+  border: 3px dashed var(--ds-color-border-strong);
+  background: transparent;
+  color: var(--ds-color-text-muted);
+  font-size: var(--ds-text-sm);
+}
+
+@media (max-width: 360px) {
+  .seats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------- Difficulty picker ---------- */
+
+.difficulty {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.difficulty legend {
+  padding: 0;
+  margin-bottom: var(--ds-space-3);
+}
+
+.difficulty__options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ds-space-2);
+}
+
+.difficulty__option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-1);
+  min-height: 5rem;
+  padding: var(--ds-space-2);
+  border: 3px solid var(--ds-color-control-border);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-color-surface);
+  color: var(--ds-color-text);
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+
+.difficulty__option:hover {
+  background: var(--ds-color-surface-hover);
+}
+
+.difficulty__option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.difficulty__option:has(input:focus-visible) {
+  outline: 2px solid var(--ds-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.difficulty__option:has(input:checked) {
+  background: var(--arc-blue);
+  border-color: var(--arc-blue-edge);
+  color: var(--arc-ink);
+  box-shadow: 0 4px 0 var(--arc-blue-shadow);
+}
+
+.difficulty__option:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.difficulty__stars {
+  display: flex;
+  gap: 2px;
+  color: var(--ds-color-accent-text);
+}
+
+.difficulty__option:has(input:checked) .difficulty__stars {
+  color: var(--arc-ink);
+}
+
+.difficulty__name {
+  font-family: var(--arc-font);
+  font-size: var(--ds-text-sm);
+  letter-spacing: 0.04em;
+}
+
+.difficulty__hint {
+  font-size: var(--ds-text-xs);
+}
+
+/* ---------- Game HUD ---------- */
+
+.hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-4);
+}
+
+.hud__title {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.hud__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  margin: 0;
+}
+
+.hud__stat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-1) var(--ds-space-3);
+  border: 2px solid var(--ds-color-border-strong);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-color-surface);
+}
+
+.hud__stat dt {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-color-text-muted);
+}
+
+.hud__stat dd {
+  margin: 0;
+  font-family: var(--arc-font);
+  font-size: var(--ds-text-md);
+}
+
+.hud__stat--score dd {
+  color: var(--ds-color-accent-text);
+}
+
+.hud__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+}
+
+/* ---------- Leaderboards (scores panel, results) ---------- */
+
+.leaderboard {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.leaderboard__row {
+  display: grid;
+  grid-template-columns: 2.5rem 2.125rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2);
+  border-radius: var(--ds-radius-md);
+}
+
+.leaderboard__row.is-you {
+  background: var(--ds-color-primary-subtle);
+}
+
+.leaderboard__place {
+  font-family: var(--arc-font);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-color-text-muted);
+  text-align: center;
+}
+
+.leaderboard__row.is-you .leaderboard__place {
+  color: var(--ds-color-primary-text);
+}
+
+.leaderboard__place.is-first {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2rem;
+  border-radius: var(--ds-radius-sm);
+  background: var(--arc-gold);
+  color: var(--arc-ink);
+}
+
+.leaderboard__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--ds-weight-semibold);
+}
+
+.leaderboard__name small {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-regular);
+  color: var(--ds-color-text-muted);
+}
+
+.leaderboard__row.is-you .leaderboard__name small {
+  color: var(--ds-color-primary-text);
+}
+
+.leaderboard__score {
+  font-family: var(--arc-font);
+  font-size: var(--ds-text-lg);
+  color: var(--ds-color-accent-text);
+  text-align: right;
+}
+
+.leaderboard__row.is-you .leaderboard__score {
+  color: var(--ds-color-primary-text);
+}
+
+.leaderboard__score small {
+  font-family: var(--ds-font-sans);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-color-text-muted);
+}
+
+.leaderboard__row.is-you .leaderboard__score small {
+  color: var(--ds-color-primary-text);
+}
+
+/* ---------- Lockout ---------- */
+
+.lockout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: 3px solid var(--ds-color-danger);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-color-danger-subtle);
+}
+
+.lockout__head {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-family: var(--arc-font);
+  color: var(--ds-color-danger-text);
+}
+
+.lockout .ds-meter__head {
+  display: none;
+}
+
+.lockout .ds-meter__fill {
+  background: var(--ds-color-danger);
+}
+
+/* ---------- Dialog ---------- */
+
+.arc-dialog .ds-dialog__panel {
+  border: 3px solid var(--arc-panel-edge);
+  border-radius: var(--ds-radius-xl);
+  box-shadow: 0 var(--arc-depth) 0 var(--arc-panel-shadow);
+}
+
+.arc-dialog .ds-dialog__title {
+  font-family: var(--arc-font);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--arc-title);
+}
+
+/* ---------- Layout helpers ---------- */
+
+.arc-center {
+  text-align: center;
+}
+
+.arc-panel.arc-center-items {
+  align-items: center;
+}
+
+.lobby {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-6);
+}
+
+.lobby__top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.lobby__title {
+  font-size: var(--ds-text-4xl);
+}
+
+.lobby__section,
+.results__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+.lobby__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.hud__round {
+  font-size: var(--ds-text-3xl);
+}
+
+.lockout__head {
+  margin: 0;
+}
+
+.arc-card.ds-card {
+  border: 3px solid var(--arc-panel-edge);
+  border-radius: var(--ds-radius-xl);
+  box-shadow: 0 var(--arc-depth) 0 var(--arc-panel-shadow);
+}
+
+.arc-card .ds-card__title {
+  font-family: var(--arc-font);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+/* The leader's gold tile keeps its ink text, even on your own row. */
+.leaderboard .leaderboard__place.is-first {
+  color: var(--arc-ink);
+}
+
+/* Match the board's width, like the number pad. */
+.lockout {
+  width: 100%;
+  max-width: calc(var(--ds-space-16) * 9);
+  margin-inline: auto;
+}
+
+.ds-button.arc-btn {
+  gap: var(--ds-space-3);
+}
