@@ -62,18 +62,18 @@ Once you have a token, run `npm install` to regenerate `package-lock.json` with 
 
 ### Playing over the internet
 
-On one network, browsers connect directly. Across the internet, players behind strict NATs (mobile data, CGNAT, most office and university networks) can only reach each other through a TURN relay. PeerJS's free relay is unreliable, so the game uses [Cloudflare's TURN service](https://developers.cloudflare.com/realtime/turn/) (free tier).
+On one network, browsers connect directly. Across the internet, players behind strict NATs (mobile data, CGNAT, most office and university networks) can only reach each other through a TURN relay. PeerJS's free relay is unreliable, so the game uses [Metered's TURN service](https://www.metered.ca/stun-turn). Its free plan needs no credit card and includes 500 MB of relay traffic a month. That's plenty here: game messages are small, and only players who can't connect directly use the relay.
 
-A browser needs TURN credentials to use the relay, so they can never be hidden from players. Instead, `turn-worker/` is a small Cloudflare Worker that keeps the TURN API token secret and hands out credentials that expire after 4 hours. It only answers requests from the origins in `ALLOWED_ORIGINS`.
+A browser needs TURN credentials to use the relay, so they can never be hidden from players. Instead, `turn-worker/` is a small Cloudflare Worker that keeps the Metered secret key secret and hands out credentials that expire after 4 hours. It only answers requests from the origins in `ALLOWED_ORIGINS`. The Workers free plan needs no credit card either.
 
 One-time setup:
 
-1. In the Cloudflare dashboard, go to **Realtime → TURN Server** and create a TURN key. Note its key id and API token.
-2. In `turn-worker/wrangler.toml`, set `TURN_KEY_ID`. Check that `ALLOWED_ORIGINS` matches your site.
-3. Deploy the Worker:
+1. Sign up at https://dashboard.metered.ca/signup. Note your app name (the `<appname>` in `<appname>.metered.live`) and the secret key under **Developers**.
+2. In `turn-worker/wrangler.toml`, set `METERED_APP_NAME`. Check that `ALLOWED_ORIGINS` matches your site.
+3. Deploy the Worker (wrangler asks you to sign in to a free Cloudflare account):
    ```sh
    cd turn-worker
-   npx wrangler secret put TURN_KEY_API_TOKEN   # paste the API token
+   npx wrangler secret put METERED_SECRET_KEY   # paste the secret key
    npx wrangler deploy                          # prints https://sudoku-mash-turn.<you>.workers.dev
    ```
 4. In the repo, go to **Settings → Secrets and variables → Actions → Variables** and add `TURN_CREDENTIALS_URL` with the Worker's URL. It isn't a secret.
