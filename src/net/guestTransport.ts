@@ -1,4 +1,5 @@
 import Peer, { type DataConnection, type PeerError } from 'peerjs';
+import { peerOptions } from './iceServers';
 import { isServerMessage, type ClientMessage, type JoinRejectReason, type ServerMessage } from './messages';
 import { peerIdFor } from './peerIds';
 
@@ -50,9 +51,10 @@ export class GuestConnection {
     });
   }
 
-  static connect(code: string, timeoutMs = 10_000): Promise<GuestConnection> {
+  static async connect(code: string, timeoutMs = 10_000): Promise<GuestConnection> {
+    const options = await peerOptions();
     return new Promise((resolve, reject) => {
-      const peer = new Peer();
+      const peer = new Peer(options);
       let settled = false;
       const fail = (error: ConnectError) => {
         if (settled) return;

@@ -1,5 +1,6 @@
 import Peer, { type DataConnection, type PeerError } from 'peerjs';
 import { isClientMessage, type ClientMessage, type ServerMessage } from './messages';
+import { peerOptions } from './iceServers';
 import { backoffMs, peerIdFor, randomCode, sleep } from './peerIds';
 
 export interface HostTransportHandlers {
@@ -11,9 +12,10 @@ export interface HostTransportHandlers {
 
 type ErrorType = PeerError<string>['type'];
 
-function openPeer(id: string): Promise<Peer> {
+async function openPeer(id: string): Promise<Peer> {
+  const options = await peerOptions();
   return new Promise((resolve, reject) => {
-    const peer = new Peer(id);
+    const peer = new Peer(id, options);
     const onError = (err: PeerError<string>) => {
       peer.off('open', onOpen);
       peer.destroy();

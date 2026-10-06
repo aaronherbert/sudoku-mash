@@ -1,0 +1,9 @@
+name = "sudoku-mash-turn"
+main = "index.ts"
+compatibility_date = "2026-10-01"
+
+[vars]
+TURN_KEY_ID = "<your Cloudflare TURN key id>"
+ALLOWED_ORIGINS = "https://aaronherbert.github.io,http://localhost:5173"
+
+# TURN_KEY_API_TOKEN is a secret: `npx wrangler secret put TURN_KEY_API_TOKEN`

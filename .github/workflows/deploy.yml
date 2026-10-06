@@ -37,8 +37,11 @@ jobs:
       - name: Test
         run: npm test
 
+      # TURN relay for players behind strict NATs (see README: "Playing over the internet").
       - name: Build
         run: npm run build
+        env:
+          VITE_TURN_CREDENTIALS_URL: ${{ vars.TURN_CREDENTIALS_URL }}
 
       - uses: actions/configure-pages@v5
 

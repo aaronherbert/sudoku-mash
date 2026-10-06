@@ -60,6 +60,27 @@ Once you have a token, run `npm install` to regenerate `package-lock.json` with 
 2. On the Tide package page, go to **Package settings → Manage Actions access**, add this repository, and give it read access.
 3. Vite's `base` is `/sudoku-mash/` (in `vite.config.ts`). If you rename the repo, change it to match.
 
+### Playing over the internet
+
+On one network, browsers connect directly. Across the internet, players behind strict NATs (mobile data, CGNAT, most office and university networks) can only reach each other through a TURN relay. PeerJS's free relay is unreliable, so the game uses [Cloudflare's TURN service](https://developers.cloudflare.com/realtime/turn/) (free tier).
+
+A browser needs TURN credentials to use the relay, so they can never be hidden from players. Instead, `turn-worker/` is a small Cloudflare Worker that keeps the TURN API token secret and hands out credentials that expire after 4 hours. It only answers requests from the origins in `ALLOWED_ORIGINS`.
+
+One-time setup:
+
+1. In the Cloudflare dashboard, go to **Realtime → TURN Server** and create a TURN key. Note its key id and API token.
+2. In `turn-worker/wrangler.toml`, set `TURN_KEY_ID`. Check that `ALLOWED_ORIGINS` matches your site.
+3. Deploy the Worker:
+   ```sh
+   cd turn-worker
+   npx wrangler secret put TURN_KEY_API_TOKEN   # paste the API token
+   npx wrangler deploy                          # prints https://sudoku-mash-turn.<you>.workers.dev
+   ```
+4. In the repo, go to **Settings → Secrets and variables → Actions → Variables** and add `TURN_CREDENTIALS_URL` with the Worker's URL. It isn't a secret.
+5. Push to `main` (or re-run the workflow).
+
+For local dev, put `VITE_TURN_CREDENTIALS_URL=<worker url>` in `.env.local`.
+
 ## How it works
 
 ```
@@ -72,6 +93,8 @@ src/session/  React hooks that join the engine and network into one RoomHandle
               for the UI. Also handles persistence and reconnects.
 src/ui/       Screens, built from Tide components. The board and number pad
               are custom, styled only with Tide tokens (app.css).
+turn-worker/  Cloudflare Worker that hands out short-lived TURN credentials
+              (see "Playing over the internet"). Deployed separately.
 ```
 
 - The host is also a player. Its moves go through the same `reduce()` as guests' moves, without the network hop.
